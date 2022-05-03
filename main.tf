@@ -76,6 +76,7 @@ module "eventArc" {
   project_id  = var.project_id
   region      = var.region
   cloudRun-scc-proxy = module.cloudRun.cloudRun-scc-proxy
+  project_number = data.google_project.project.number
   depends_on  = [
     module.cloudRun,
     module.apis
