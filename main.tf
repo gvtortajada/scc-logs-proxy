@@ -21,12 +21,25 @@ module "apis" {
   project_id = var.project_id
 }
 
-module "iam" {
-  source      = "./iam"
-  project_id  = var.project_id
-  project_number = data.google_project.project.number
-  depends_on  = [
+module "pubsub" {
+  source     = "./pubsub"
+  project_id = var.project_id
+  depends_on = [
     module.apis
+  ]
+}
+
+module "iam" {
+  source                        = "./iam"
+  project_id                    = var.project_id
+  project_number                = data.google_project.project.number
+  logrhythm-logs-topic          = module.pubsub.logrhythm-logs-topic
+  logrhythm-alerts-topic        = module.pubsub.logrhythm-alerts-topic
+  logrhythm-logs-subscription   = module.pubsub.logrhythm-logs-subscription
+  logrhythm-alerts-subscription = module.pubsub.logrhythm-alerts-subscription
+  depends_on  = [
+    module.apis,
+    module.pubsub,
   ]
 }
 

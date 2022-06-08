@@ -1,5 +1,9 @@
 variable "project_id" {}
 variable "project_number" {}
+variable "logrhythm-logs-topic" {}
+variable "logrhythm-alerts-topic" {}
+variable "logrhythm-logs-subscription" {}
+variable "logrhythm-alerts-subscription" {}
 
 resource "google_project_organization_policy" "requireOsLogin" {
   project     = var.project_id
@@ -54,4 +58,76 @@ resource "google_project_iam_member" "logWriter" {
     member  = "serviceAccount:${var.project_number}-compute@developer.gserviceaccount.com"
 }
 
+resource "google_service_account" "logrhythm-logs-pub" {
+    account_id   = "logrhythm-logs-pub"
+    display_name = "logrhythm-logs-pub"
+    project      = var.project_id
+}
 
+resource "google_service_account" "logrhythm-alerts-pub" {
+    account_id   = "logrhythm-alerts-pub"
+    display_name = "logrhythm-alerts-pub"
+    project      = var.project_id
+}
+
+# resource "google_project_iam_member" "logrhythm-logs-pub" {
+#     project = var.project_id
+#     role    = "roles/pubsub.publisher"
+#     member  = "serviceAccount:${google_service_account.logrhythm-logs-pub.email}"
+# }
+
+# resource "google_project_iam_member" "logrhythm-alerts-pub" {
+#     project = var.project_id
+#     role    = "roles/pubsub.publisher"
+#     member  = "serviceAccount:${google_service_account.logrhythm-alerts-pub.email}"
+# }
+
+resource "google_service_account" "logrhythm-logs-sub" {
+    account_id   = "logrhythm-logs-sub"
+    display_name = "logrhythm-logs-sub"
+    project      = var.project_id
+}
+
+resource "google_service_account" "logrhythm-alerts-sub" {
+    account_id   = "logrhythm-alerts-sub"
+    display_name = "logrhythm-alerts-sub"
+    project      = var.project_id
+}
+
+# resource "google_project_iam_member" "logrhythm-logs-sub" {
+#     project = var.project_id
+#     role    = "roles/pubsub.subscriber"
+#     member  = "serviceAccount:${google_service_account.logrhythm-logs-sub.email}"
+# }
+
+# resource "google_project_iam_member" "logrhythm-alerts-sub" {
+#     project = var.project_id
+#     role    = "roles/pubsub.subscriber"
+#     member  = "serviceAccount:${google_service_account.logrhythm-alerts-sub.email}"
+# }
+
+resource "google_pubsub_topic_iam_member" "logrhythm-logs-pub" {
+  project = var.project_id
+  topic = var.logrhythm-logs-topic.name
+  role = "roles/pubsub.publisher"
+  member = "serviceAccount:${google_service_account.logrhythm-logs-pub.email}"
+}
+
+resource "google_pubsub_topic_iam_member" "logrhythm-alerts-pub" {
+  project = var.project_id
+  topic = var.logrhythm-alerts-topic.name
+  role = "roles/pubsub.publisher"
+  member = "serviceAccount:${google_service_account.logrhythm-alerts-pub.email}"
+}
+
+resource "google_pubsub_subscription_iam_member" "logrhythm-logs-sub" {
+  subscription = var.logrhythm-logs-subscription.name
+  role         = "roles/pubsub.subscriber"
+  member       = "serviceAccount:${google_service_account.logrhythm-logs-sub.email}"
+}
+
+resource "google_pubsub_subscription_iam_member" "logrhythm-alerts-sub" {
+  subscription = var.logrhythm-alerts-subscription.name
+  role         = "roles/pubsub.subscriber"
+  member       = "serviceAccount:${google_service_account.logrhythm-alerts-sub.email}"
+}
